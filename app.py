@@ -15,7 +15,7 @@ GOOGLE_SHEET_ID = os.getenv("GOOGLE_SHEET_ID")
 # Авторизация в Google Sheets
 def get_sheet():
     scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-    creds = ServiceAccountCredentials.from_json_keyfile_name("credentials.json", scope)
+    creds = ServiceAccountCredentials.from_json_keyfile_name("/etc/secrets/credentials.json", scope)
     client = gspread.authorize(creds)
     sheet = client.open_by_key(GOOGLE_SHEET_ID).sheet1
     return sheet
@@ -29,11 +29,11 @@ def ask():
     sheet = get_sheet()
     data = sheet.get_all_records()
 
-    # Пример использования GPT
+    # GPT-ответ
     completion = openai.ChatCompletion.create(
         model="gpt-4",
         messages=[
-            {"role": "system", "content": "Ты ассистент, который отвечает на вопросы по таблице выплат сотрудникам."},
+            {"role": "system", "content": "Ты помощник по таблице выплат."},
             {"role": "user", "content": f"Вот данные: {data}. Вопрос: {prompt}"}
         ]
     )
@@ -42,4 +42,4 @@ def ask():
     return jsonify({"answer": answer})
 
 if _name_ == "_main_":
-    app.run(host="0.0.0.0", port=5000)
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
